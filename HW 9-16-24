@@ -1,0 +1,80 @@
+import numpy as np
+import scipy.stats as stats
+import matplotlib.pyplot as plt
+
+def simulate_data(num_samples, effect_size):
+    """
+    Simulate data with given effect size.
+    """
+    # Generate Poisson-distributed LC spiking data
+    lc_data = np.random.poisson(5, num_samples)
+    
+    # Generate Gaussian-distributed pupil data with a correlation
+    pupil_data = np.random.normal(size=num_samples)
+    
+    # Introduce correlation
+    pupil_data += effect_size * lc_data
+    
+    return lc_data, pupil_data
+
+def calculate_correlation(lc_data, pupil_data):
+    """
+    Compute the correlation coefficient between LC and pupil data.
+    """
+    return np.corrcoef(lc_data, pupil_data)[0, 1]
+
+def compute_power(effect_size, num_samples, num_simulations=1000, alpha=0.05):
+    """
+    Compute the power for a given effect size.
+    """
+    # Simulate null distribution
+    null_correlations = []
+    for _ in range(num_simulations):
+        lc_data, pupil_data = simulate_data(num_samples, 0)  # Null effect size
+        null_corr = calculate_correlation(lc_data, pupil_data)
+        null_correlations.append(null_corr)
+    
+    # Compute threshold for significance
+    threshold = np.percentile(np.abs(null_correlations), 100 * (1 - alpha / 2))
+    
+    # Simulate effect size
+    effect_correlations = []
+    for _ in range(num_simulations):
+        lc_data, pupil_data = simulate_data(num_samples, effect_size)
+        effect_corr = calculate_correlation(lc_data, pupil_data)
+        effect_correlations.append(effect_corr)
+    
+    # Compute power
+    significant_results = np.sum(np.abs(effect_correlations) > threshold) / num_simulations
+    
+    return significant_results
+
+def plot_results(effect_sizes, power_results):
+    """
+    Plot power analysis results.
+    """
+    plt.figure(figsize=(10, 6))
+    plt.plot(effect_sizes, power_results, marker='o', linestyle='-', color='b')
+    plt.axhline(y=0.80, color='r', linestyle='--', label='80% Power')
+    plt.xlabel('Effect Size')
+    plt.ylabel('Achieved Power')
+    plt.title('Power Analysis for Different Effect Sizes')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+def main():
+    effect_sizes = np.linspace(0, 1, 10)  # Example effect sizes
+    num_simulations = 1000
+    num_samples = 30  # Example sample size
+    
+    power_results = []
+    for size in effect_sizes:
+        power = compute_power(size, num_samples, num_simulations)
+        power_results.append(power)
+    
+    plot_results(effect_sizes, power_results)
+
+if __name__ == "__main__":
+    main()
+    
