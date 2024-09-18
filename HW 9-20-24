@@ -1,0 +1,228 @@
+#Code for first problem
+import numpy as np
+from scipy import stats
+
+# Parameters
+num_tests = 1000
+sample_size = 30  # Size of each sample
+mean = 0          # Mean of the samples
+std_dev = 1       # Standard deviation of the samples
+
+# Store p-values
+p_values = []
+
+# Run t-tests
+for _ in range(num_tests):
+    # Generate two samples from normal distributions
+    sample1 = np.random.normal(loc=mean, scale=std_dev, size=sample_size)
+    sample2 = np.random.normal(loc=mean, scale=std_dev, size=sample_size)
+    
+    # Perform t-test
+    t_stat, p_val = stats.ttest_ind(sample1, sample2)
+    
+    # Store the p-value
+    p_values.append(p_val)
+
+# Calculate the proportion of significant results
+significant_results = sum(p < 0.05 for p in p_values)
+proportion_significant = significant_results / num_tests
+
+# Print results
+print(f'Number of significant results (p < 0.05): {significant_results}')
+print(f'Proportion of significant results: {proportion_significant:.3f}')
+#Number of significant results (p < 0.05): 63
+#Proportion of significant results: 0.063
+
+#Bonferroni
+import numpy as np
+from scipy import stats
+
+# Parameters
+num_tests = 1000
+sample_size = 30  # Size of each sample
+mean1 = 0         # Mean of the first sample
+mean2 = 1         # Mean of the second sample
+std_dev = 1       # Standard deviation of the samples
+alpha = 0.05      # Original significance level
+
+# Store p-values
+p_values = []
+
+# Run t-tests
+for _ in range(num_tests):
+    # Generate two samples from normal distributions with different means
+    sample1 = np.random.normal(loc=mean1, scale=std_dev, size=sample_size)
+    sample2 = np.random.normal(loc=mean2, scale=std_dev, size=sample_size)
+    
+    # Perform t-test
+    t_stat, p_val = stats.ttest_ind(sample1, sample2)
+    
+    # Store the p-value
+    p_values.append(p_val)
+
+# Calculate the Bonferroni adjusted alpha
+bonferroni_alpha = alpha / num_tests
+
+# Calculate the adjusted p-values
+adjusted_p_values = [p * num_tests for p in p_values]
+
+# Check how many are significant
+significant_results_bonferroni = sum(adjusted_p <= alpha for adjusted_p in adjusted_p_values)
+proportion_significant_bonferroni = significant_results_bonferroni / num_tests
+
+# Print raw and adjusted p-values for inspection
+print("First 10 raw p-values:", p_values[:10])
+print("First 10 adjusted p-values:", adjusted_p_values[:10])
+print(f'Number of significant results (Bonferroni corrected): {significant_results_bonferroni}')
+print(f'Proportion of significant results (Bonferroni corrected): {proportion_significant_bonferroni:.3f}')
+#Number of significant results (Bonferroni corrected): 334
+#Proportion of significant results (Bonferroni corrected): 0.334
+
+#Benjamini-Hochberg
+import numpy as np
+from scipy import stats
+import pandas as pd
+
+# Parameters
+num_tests = 1000
+sample_size = 30  # Size of each sample
+mean1 = 0         # Mean of the first sample
+mean2 = 1         # Mean of the second sample
+std_dev = 1       # Standard deviation of the samples
+alpha = 0.05      # Desired FDR level
+
+# Store p-values
+p_values = []
+
+# Run t-tests
+for _ in range(num_tests):
+    # Generate two samples from normal distributions with different means
+    sample1 = np.random.normal(loc=mean1, scale=std_dev, size=sample_size)
+    sample2 = np.random.normal(loc=mean2, scale=std_dev, size=sample_size)
+    
+    # Perform t-test
+    t_stat, p_val = stats.ttest_ind(sample1, sample2)
+    
+    # Store the p-value
+    p_values.append(p_val)
+
+# Print the first 10 raw p-values for inspection
+print("First 10 raw p-values:", p_values[:10])
+
+# Convert p-values to a DataFrame for easy manipulation
+p_values_df = pd.DataFrame(p_values, columns=['p_value'])
+
+# Sort p-values and assign ranks
+p_values_df['rank'] = p_values_df['p_value'].rank(method='first')
+p_values_df['adjusted'] = p_values_df['p_value'] * num_tests / p_values_df['rank']
+
+# Determine significant results
+p_values_df['significant'] = p_values_df['adjusted'] <= alpha
+
+# Count significant results
+significant_results_bh = p_values_df['significant'].sum()
+proportion_significant_bh = significant_results_bh / num_tests
+
+# Print results
+print(f'Number of significant results (Benjamini-Hochberg): {significant_results_bh}')
+print(f'Proportion of significant results (Benjamini-Hochberg): {proportion_significant_bh:.3f}')
+#Number of significant results (Benjamini-Hochberg): 958
+#Proportion of significant results (Benjamini-Hochberg): 0.958
+
+#Bonferroni mean =1,2
+import numpy as np
+from scipy import stats
+
+# Parameters
+num_tests = 1000
+sample_size = 30  # Size of each sample
+mean1 = 1         # Mean of the first sample
+mean2 = 2         # Mean of the second sample
+std_dev = 1       # Standard deviation of the samples
+alpha = 0.05      # Original significance level
+
+# Store p-values
+p_values = []
+
+# Run t-tests
+for _ in range(num_tests):
+    # Generate two samples from normal distributions with different means
+    sample1 = np.random.normal(loc=mean1, scale=std_dev, size=sample_size)
+    sample2 = np.random.normal(loc=mean2, scale=std_dev, size=sample_size)
+    
+    # Perform t-test
+    t_stat, p_val = stats.ttest_ind(sample1, sample2)
+    
+    # Store the p-value
+    p_values.append(p_val)
+
+# Calculate the Bonferroni adjusted alpha
+bonferroni_alpha = alpha / num_tests
+
+# Calculate the adjusted p-values
+adjusted_p_values = [p * num_tests for p in p_values]
+
+# Check how many are significant
+significant_results_bonferroni = sum(adjusted_p <= alpha for adjusted_p in adjusted_p_values)
+proportion_significant_bonferroni = significant_results_bonferroni / num_tests
+
+# Print raw and adjusted p-values for inspection
+print("First 10 raw p-values:", p_values[:10])
+print("First 10 adjusted p-values:", adjusted_p_values[:10])
+print(f'Number of significant results (Bonferroni corrected): {significant_results_bonferroni}')
+print(f'Proportion of significant results (Bonferroni corrected): {proportion_significant_bonferroni:.3f}')
+#Number of significant results (Bonferroni corrected): 328
+#Proportion of significant results (Bonferroni corrected): 0.328
+
+#Benjamini-Hochberg, mean= 1,2
+import numpy as np
+from scipy import stats
+import pandas as pd
+
+# Parameters
+num_tests = 1000
+sample_size = 30  # Size of each sample
+mean1 = 1         # Mean of the first sample
+mean2 = 5         # Mean of the second sample
+std_dev = 1       # Standard deviation of the samples
+alpha = 0.05      # Desired FDR level
+
+# Store p-values
+p_values = []
+
+# Run t-tests
+for _ in range(num_tests):
+    # Generate two samples from normal distributions with different means
+    sample1 = np.random.normal(loc=mean1, scale=std_dev, size=sample_size)
+    sample2 = np.random.normal(loc=mean2, scale=std_dev, size=sample_size)
+    
+    # Perform t-test
+    t_stat, p_val = stats.ttest_ind(sample1, sample2)
+    
+    # Store the p-value
+    p_values.append(p_val)
+
+# Print the first 10 raw p-values for inspection
+print("First 10 raw p-values:", p_values[:10])
+
+# Convert p-values to a DataFrame for easy manipulation
+p_values_df = pd.DataFrame(p_values, columns=['p_value'])
+
+# Sort p-values and assign ranks
+p_values_df['rank'] = p_values_df['p_value'].rank(method='first')
+p_values_df['adjusted'] = p_values_df['p_value'] * num_tests / p_values_df['rank']
+
+# Determine significant results
+p_values_df['significant'] = p_values_df['adjusted'] <= alpha
+
+# Count significant results
+significant_results_bh = p_values_df['significant'].sum()
+proportion_significant_bh = significant_results_bh / num_tests
+
+# Print results
+print(f'Number of significant results (Benjamini-Hochberg): {significant_results_bh}')
+print(f'Proportion of significant results (Benjamini-Hochberg): {proportion_significant_bh:.3f}')
+#Number of significant results (Benjamini-Hochberg): 1000
+#Proportion of significant results (Benjamini-Hochberg): 1.000
+
+#increasing the distance between the meanas of both tests increases the power of the test. it also lowers the probability of a type 1 error and controls the FDR
