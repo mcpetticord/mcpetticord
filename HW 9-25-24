@@ -1,0 +1,170 @@
+import matplotlib.pyplot as plt
+
+# Data: Wing length and Tail length
+wing_length = [10.4, 10.8, 11.1, 10.2, 10.3, 10.2, 10.7, 10.5, 10.8, 11.2, 10.6, 11.4]
+tail_length = [7.4, 7.6, 7.9, 7.2, 7.4, 7.1, 7.4, 7.2, 7.8, 7.7, 7.8, 8.3]
+
+# Create a scatter plot
+plt.figure(figsize=(8, 6))
+plt.scatter(wing_length, tail_length, color='blue', marker='o')
+
+# Adding titles and labels
+plt.title('Wing Length vs Tail Length')
+plt.xlabel('Wing Length (cm)')
+plt.ylabel('Tail Length (cm)')
+
+# Show the grid
+plt.grid(True)
+
+# Display the plot
+plt.show()
+#yes the data seems to be related
+
+import numpy as np
+
+# Data: Wing length and Tail length
+wing_length = np.array([10.4, 10.8, 11.1, 10.2, 10.3, 10.2, 10.7, 10.5, 10.8, 11.2, 10.6, 11.4])
+tail_length = np.array([7.4, 7.6, 7.9, 7.2, 7.4, 7.1, 7.4, 7.2, 7.8, 7.7, 7.8, 8.3])
+
+# Number of data points
+n = len(wing_length)
+
+# Calculate sums
+sum_x = np.sum(wing_length)
+sum_y = np.sum(tail_length)
+sum_xy = np.sum(wing_length * tail_length)
+sum_x2 = np.sum(wing_length ** 2)
+sum_y2 = np.sum(tail_length ** 2)
+
+# Calculate r using the formula
+r_manual = (n * sum_xy - sum_x * sum_y) / np.sqrt((n * sum_x2 - sum_x**2) * (n * sum_y2 - sum_y**2))
+
+# Calculate r using numpy's corrcoef
+correlation_matrix = np.corrcoef(wing_length, tail_length)
+r_numpy = correlation_matrix[0, 1]  # The correlation coefficient is in the matrix
+
+# Output results
+print(f"Calculated r (manual method): {r_manual}")
+print(f"Calculated r (numpy method): {r_numpy}")
+
+# Check if both results are the same
+same = np.isclose(r_manual, r_numpy)
+print(f"Do both methods give the same result? {'Yes' if same else 'No'}")
+#yes both methods give the same result
+#Calculated r (manual method): 0.8703545613057361
+#Calculated r (numpy method): 0.8703545613058227
+
+import numpy as np
+
+# Data: Wing length and Tail length
+wing_length = np.array([10.4, 10.8, 11.1, 10.2, 10.3, 10.2, 10.7, 10.5, 10.8, 11.2, 10.6, 11.4])
+tail_length = np.array([7.4, 7.6, 7.9, 7.2, 7.4, 7.1, 7.4, 7.2, 7.8, 7.7, 7.8, 8.3])
+
+# Calculate standard deviation
+std_wing = np.std(wing_length, ddof=1)  # Sample standard deviation
+std_tail = np.std(tail_length, ddof=1)  # Sample standard deviation
+
+# Number of data points
+n = len(wing_length)
+
+# Calculate standard errors
+SE_wing = std_wing / np.sqrt(n)
+SE_tail = std_tail / np.sqrt(n)
+
+# Output results
+print(f"Standard Error of Wing Length: {SE_wing:.4f}")
+print(f"Standard Error of Tail Length: {SE_tail:.4f}")
+#Standard Error of Wing Length: 0.1140
+#Standard Error of Tail Length: 0.1010
+
+import numpy as np
+from scipy import stats
+
+# Data: Wing length and Tail length
+wing_length = np.array([10.4, 10.8, 11.1, 10.2, 10.3, 10.2, 10.7, 10.5, 10.8, 11.2, 10.6, 11.4])
+tail_length = np.array([7.4, 7.6, 7.9, 7.2, 7.4, 7.1, 7.4, 7.2, 7.8, 7.7, 7.8, 8.3])
+
+# Calculate correlation coefficient
+correlation_matrix = np.corrcoef(wing_length, tail_length)
+r = correlation_matrix[0, 1]
+
+# Number of data points
+n = len(wing_length)
+
+# Calculate test statistic
+t = r * np.sqrt(n - 2) / np.sqrt(1 - r**2)
+
+# Degrees of freedom
+df = n - 2
+
+# Critical t value for two-tailed test at alpha = 0.05
+alpha = 0.05
+t_critical = stats.t.ppf(1 - alpha/2, df)
+
+# Check significance
+is_significant = abs(t) > t_critical
+
+# Output results
+print(f"Correlation coefficient (r): {r:.4f}")
+print(f"Test statistic (t): {t:.4f}")
+print(f"Critical t value: {t_critical:.4f}")
+print(f"Is the result significant at p < 0.05? {'Yes' if is_significant else 'No'}")
+#Correlation coefficient (r): 0.8704
+#Test statistic (t): 5.5893
+#Critical t value: 2.2281
+#Is the result significant at p < 0.05? Yes
+
+import numpy as np
+from scipy import stats
+
+# Your correlation coefficient
+r1 = 0.8704  # Replace this with your calculated r value
+n1 = len(wing_length)  # Your sample size
+
+# Yale's correlation coefficient
+r2 = 0.75  # Yale's correlation
+n2 = len(wing_length)  # Assuming same sample size as yours
+
+# Fisher's Z transformation
+Z1 = 0.5 * np.log((1 + r1) / (1 - r1))
+Z2 = 0.5 * np.log((1 + r2) / (1 - r2))
+
+# Standard error of the difference
+SE_diff = np.sqrt((1 / (n1 - 3)) + (1 / (n2 - 3)))
+
+# Calculate z-score
+z = (Z1 - Z2) / SE_diff
+
+# Calculate the p-value
+p_value = 2 * (1 - stats.norm.cdf(abs(z)))  # Two-tailed test
+
+# Output results
+print(f"Your correlation (r1): {r1}")
+print(f"Yale's correlation (r2): {r2}")
+print(f"Z-score: {z:.4f}")
+print(f"P-value: {p_value:.4f}")
+print(f"Is the difference significant at p < 0.05? {'Yes' if p_value < 0.05 else 'No'}")
+#Your correlation (r1): 0.8704
+#Yale's correlation (r2): 0.75
+#Z-score: 0.7674
+#P-value: 0.4428
+#Is the difference significant at p < 0.05? No
+
+import numpy as np
+from scipy import stats
+
+# Parameters
+alpha = 0.05  # significance level
+desired_power = 0.8  # desired power level
+effect_size = 0.5  # desired correlation
+
+# Calculate Z values
+Z_alpha = stats.norm.ppf(1 - alpha / 2)  # critical value for alpha
+Z_beta = stats.norm.ppf(desired_power)  # critical value for desired power
+
+# Calculate required sample size
+n_required = (Z_alpha + Z_beta) ** 2 / (effect_size ** 2) + 3
+
+# Print the required sample size
+print(f"Required sample size to achieve power of {desired_power} for effect size of {effect_size}: {np.ceil(n_required)}")
+#Required sample size to achieve power of 0.8 for effect size of 0.5: 35.0
