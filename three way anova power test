@@ -1,0 +1,93 @@
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+from statsmodels.stats.anova import anova_lm
+
+# Simulation parameters
+n_simulations = 100  # Number of simulations
+n_subjects = 8       # Number of subjects per group
+n_levels_factor1 = 2  # Levels of factor 1 (e.g., genotype)
+n_levels_factor2 = 2  # Levels of factor 2 (e.g., UV or nonUV)
+n_levels_factor3 = 2  # Levels of factor 3 (e.g., agar or drug)
+alpha = 0.05          # Significance level
+effect_size_factor1 = 0.3  # Cohen's f for factor 1 (medium effect size)
+effect_size_factor2 = 0.3  # Cohen's f for factor 2 (medium effect size)
+effect_size_factor3 = 0.3  # Cohen's f for factor 3 (medium effect size)
+effect_size_interaction = 0.3  # Cohen's f for interaction effects (medium effect size)
+
+# Function to simulate data based on the given parameters
+def simulate_data(n_subjects, n_levels_factor1, n_levels_factor2, n_levels_factor3,
+                  effect_size_factor1, effect_size_factor2, effect_size_factor3, effect_size_interaction):
+    np.random.seed(42)
+    
+    # Create a DataFrame to store the simulated data
+    data = []
+    
+    # Main effect means
+    means_factor1 = np.zeros(n_levels_factor1) + effect_size_factor1
+    means_factor2 = np.zeros(n_levels_factor2) + effect_size_factor2
+    means_factor3 = np.zeros(n_levels_factor3) + effect_size_factor3
+
+    # Simulate group means (adding interaction effects as well)
+    for f1 in range(n_levels_factor1):
+        for f2 in range(n_levels_factor2):
+            for f3 in range(n_levels_factor3):
+                # Apply the interaction effect
+                interaction_effect = effect_size_interaction * f1 * f2 * f3
+                group_mean = means_factor1[f1] + means_factor2[f2] + means_factor3[f3] + interaction_effect
+                group_data = np.random.normal(loc=group_mean, scale=1, size=n_subjects)
+                
+                # Append to data list
+                for subject_data in group_data:
+                    data.append({
+                        'factor1': f'Genotype_{f1+1}',
+                        'factor2': f'UV_{f2+1}',
+                        'factor3': f'Agar_{f3+1}',
+                        'value': subject_data
+                    })
+
+    # Convert data to DataFrame
+    df = pd.DataFrame(data)
+    return df
+
+# Function to perform the Three-Way ANOVA
+def run_anova(data):
+    model = ols('value ~ C(factor1) * C(factor2) * C(factor3)', data=data).fit()
+    anova_table = anova_lm(model, typ=2)  # Type II sums of squares (recommended)
+    return anova_table
+
+# Function to run power analysis
+def power_analysis(n_simulations, n_subjects, n_levels_factor1, n_levels_factor2, n_levels_factor3, 
+                   effect_size_factor1, effect_size_factor2, effect_size_factor3, effect_size_interaction, alpha):
+    significant_count = 0
+    
+    for _ in range(n_simulations):
+        # Simulate data
+        data = simulate_data(n_subjects, n_levels_factor1, n_levels_factor2, n_levels_factor3,
+                             effect_size_factor1, effect_size_factor2, effect_size_factor3, effect_size_interaction)
+        
+        # Run ANOVA
+        anova_table = run_anova(data)
+        
+        # Check if any p-value is less than alpha (reject null hypothesis)
+        if anova_table.loc['C(factor1)', 'PR(>F)'] < alpha or \
+           anova_table.loc['C(factor2)', 'PR(>F)'] < alpha or \
+           anova_table.loc['C(factor3)', 'PR(>F)'] < alpha or \
+           anova_table.loc['C(factor1):C(factor2)', 'PR(>F)'] < alpha or \
+           anova_table.loc['C(factor1):C(factor3)', 'PR(>F)'] < alpha or \
+           anova_table.loc['C(factor2):C(factor3)', 'PR(>F)'] < alpha or \
+           anova_table.loc['C(factor1):C(factor2):C(factor3)', 'PR(>F)'] < alpha:
+            significant_count += 1
+    
+    # Calculate power (proportion of significant results)
+    power = significant_count / n_simulations
+    return power
+
+# Run the power analysis
+power = power_analysis(n_simulations, n_subjects, n_levels_factor1, n_levels_factor2, n_levels_factor3,
+                       effect_size_factor1, effect_size_factor2, effect_size_factor3, effect_size_interaction, alpha)
+
+# Print the estimated power
+print(f"Estimated power for Three-Way ANOVA: {power:.4f}")
+#Estimated power for Three-Way ANOVA: 1.0000
