@@ -1,0 +1,25 @@
+import numpy as np
+import statsmodels.api as sm
+from statsmodels.stats.power import TTestIndPower
+
+# Define the parameters for the power analysis
+effect_size = 0.8      # Cohen's d (medium effect size)
+alpha = 0.05           # Significance level (usually 0.05)
+power = 0.80           # Desired power (usually 0.80 or 80%)
+num_groups = 2         # Number of groups (independent samples)
+
+# Instantiate the power analysis object for the independent t-test
+ttest_power = TTestIndPower()
+
+# Calculate the required sample size per group
+sample_size_per_group = ttest_power.solve_power(effect_size=effect_size, alpha=alpha, power=power)
+
+# Print the results
+print(f"Required sample size per group: {sample_size_per_group:.2f}")
+
+# If you want to compute the power for a given sample size per group:
+sample_size = 40  #Assume you have 8 subjects per group
+computed_power = ttest_power.solve_power(effect_size=effect_size, alpha=alpha, nobs1=sample_size)
+print(f"Computed power for {sample_size} subjects per group: {computed_power:.2f}")
+#Required sample size per group: 25.52
+#Computed power for 40 subjects per group: 0.94
